@@ -12,17 +12,22 @@ permissions:
   packages: write
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # pnpm install + pnpm build (в одном скрипте)
       - name: Install pnpm, install deps, build
         run: |
           npm i -g pnpm
           pnpm install
           pnpm run build
+
+      # ВАЖНО: делаем имя образа lowercase (GHCR требование)
+      - name: Set image name (lowercase)
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -31,9 +36,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build & push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/rent-frontend-ghcr
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
