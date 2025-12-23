@@ -18,14 +18,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # pnpm install + pnpm build (в одном скрипте)
+      
       - name: Install pnpm, install deps, build
         run: |
           npm i -g pnpm
           pnpm install
           pnpm run build
 
-      # ВАЖНО: делаем имя образа lowercase (GHCR требование)
+      
       - name: Set image name (lowercase)
         run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
@@ -44,3 +44,19 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+
+  deploy:
+    name: Deploy to Azure Web App
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy container to Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: rent-frontend-siropzik-01
+          images: ghcr.io/${{ github.repository,, }}:latest
