@@ -34,7 +34,6 @@
 ---
 
 ## Посилання
-- Репозиторій: https://github.com/Siropzik/rent-frontend-ghcr  
 - Azure Web App (Application URL): https://rent-frontend-siropzik-01-dchdf2fdfmgufed6.westeurope-01.azurewebsites.net
 
 ---
